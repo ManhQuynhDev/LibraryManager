@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.dev.library.core.ResponseObject;
 import com.dev.library.model.dto.resquestDTO.RegisterDTO;
+import com.dev.library.model.dto.resquestDTO.UpdateDTO;
+import com.dev.library.model.entity.User;
 import com.dev.library.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,8 +28,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -45,7 +53,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/upload/image/{filename:.+}")
+    @GetMapping("/upload/image/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
             Path filePath = Paths.get(uploadPath).resolve(filename).normalize();
@@ -65,12 +73,38 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseObject<?>> deleteUser(@PathVariable Integer id) {
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<ResponseObject<?>> deleteUser(@PathVariable Integer userId) {
+        userService.deleteUser(userId);
         ResponseObject<?> response = new ResponseObject<>();
         response.setStatus(true);
         response.setMessage("Delete user successfully.");
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{userId}")
+    public ResponseEntity<ResponseObject<?>> updateUser(@PathVariable Integer userId,
+            @RequestBody UpdateDTO updateDTO) {
+        userService.updateUser(userId, updateDTO);
+        ResponseObject<?> response = new ResponseObject<>();
+        response.setStatus(true);
+        response.setMessage("Update user successfully.");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search-by-name")
+    public Page<User> searchUserByName(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        return userService.searchUserByName(q, page, size);
+    }
+
+    @GetMapping("/search-by-email")
+    public Page<User> searchUserByEmail(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size) {
+        return userService.searchUserByEmail(q, page, size);
+    }
 }
