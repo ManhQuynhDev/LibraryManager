@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.dev.library.core.ResponseObject;
-import com.dev.library.model.entity.User;
+import com.dev.library.model.dto.resquestDTO.RegisterDTO;
 import com.dev.library.service.UserService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -34,9 +35,9 @@ public class UserController {
     private static final String uploadPath = "uploads/";
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseObject<?>> register(@RequestPart("user") User user,
-                                                      @RequestPart(value = "file", required = false) MultipartFile file,
-                                                      HttpServletRequest request) {
+    public ResponseEntity<ResponseObject<?>> register(@RequestPart("user") RegisterDTO user,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            HttpServletRequest request) {
         ResponseObject<?> response = new ResponseObject<>();
         response.setStatus(true);
         response.setMessage("Register successfully.");
@@ -53,13 +54,23 @@ public class UserController {
 
             if (resource.exists() && resource.isReadable()) {
                 return ResponseEntity.ok()
-                        .contentType(Files.probeContentType(filePath).contains("image") ? MediaType.IMAGE_JPEG : MediaType.APPLICATION_OCTET_STREAM)
+                        .contentType(Files.probeContentType(filePath).contains("image") ? MediaType.IMAGE_JPEG
+                                : MediaType.APPLICATION_OCTET_STREAM)
                         .body(resource);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); 
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject<?>> deleteUser(@PathVariable Integer id) {
+        ResponseObject<?> response = new ResponseObject<>();
+        response.setStatus(true);
+        response.setMessage("Delete user successfully.");
+        return ResponseEntity.ok(response);
+    }
+
 }

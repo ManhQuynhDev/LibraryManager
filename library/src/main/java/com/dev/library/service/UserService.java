@@ -17,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.dev.library.core.exception.BadRequestException;
 import com.dev.library.core.exception.UnknownException;
 import com.dev.library.core.exception.UserAccountExitsException;
+import com.dev.library.core.exception.UserAccountNotFoundException;
+import com.dev.library.model.dto.resquestDTO.RegisterDTO;
 import com.dev.library.model.entity.User;
 import com.dev.library.repositories.UserRepository;
 
@@ -29,7 +31,7 @@ public class UserService {
 
     private static final String UPLOAD_DIR = "uploads/";
 
-    public void insertUser(User userDTO, MultipartFile file, HttpServletRequest request)
+    public void insertUser(RegisterDTO userDTO, MultipartFile file, HttpServletRequest request)
             throws UserAccountExitsException, UnknownException, BadRequestException {
 
         if (userRepository.findByEmail(userDTO.getEmail()).size() > 0) {
@@ -75,5 +77,14 @@ public class UserService {
         }
     }
 
-    
+    public void deleteUser(Integer id) throws UserAccountNotFoundException {
+        User user = userRepository.findUserById(id);
+        if (user == null) {
+            throw new UserAccountNotFoundException("User not found");
+        }
+        user.setDelflag(1);
+        userRepository.save(user);
+    }
+
+
 }
